@@ -1,0 +1,63 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{metropolis}
+\metroset{subsectionpage=progressbar}
+
+\usefonttheme{professionalfonts} % 使用系统/自定字体
+
+
+% === 字体设置 ===
+\usepackage[UTF8,scheme=plain,fontset=none]{ctex}
+\setCJKmainfont{Source Han Serif CN}[BoldFont={Source Han Serif CN Bold}]
+\setCJKsansfont{Source Han Sans CN}[BoldFont={Source Han Sans CN Bold}]
+% \setCJKmonofont{Sarasa Mono CN}
+
+% \input{commands.tex}
+
+% beamer 已加载 hyperref；加 unicode 以支持中文书签
+\hypersetup{unicode}
+
+% define paragraph
+\providecommand{\paragraph}[1]{\smallskip\textbf{#1}\par}
+
+% 常用包
+\usepackage{longtable,booktabs}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta}
+% \graphicspath{{.}{./figs/}{./images/}{./images_in_paper/}}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{svg}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{threeparttable}
+
+% 算法环境（与 beamer 兼容）
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}  % 提供 algorithmic 环境、\State 等
+% 可选：微调 algorithmic 缩进
+\algrenewcommand\algorithmicindent{0.8em}
+
+% 数学粗体与梯度符号
+\usepackage{bm} % \boldsymbol
+\newcommand{\bx}{\mathbf{x}}
+\newcommand{\bz}{\mathbf{z}}
+\newcommand{\bI}{\mathbf{I}}
+\newcommand{\bzero}{\mathbf{0}}
+\newcommand{\bepsilon}{\boldsymbol{\epsilon}}
+\newcommand{\grad}{\nabla}
+% 超链接（beamer 已加载 hyperref，这里只补选项）
+% \hypersetup{unicode=true}
+
+% 编号风格
+\setbeamertemplate{caption}[numbered]
+\setbeamertemplate{caption label separator}{.}
+
+\title{}
+\author{分类问题视角下的Adaboost算法}
+\date{\today}
+%---Document Begins---
+\begin{document}
+\end{document}
