@@ -56,8 +56,166 @@
 \setbeamertemplate{caption label separator}{.}
 
 \title{}
-\author{分类问题视角下的Adaboost算法}
+\author{分类问题视角下的AdaBoost算法}
 \date{\today}
+
 %---Document Begins---
 \begin{document}
+\begin{frame}[plain]
+  \titlepage
+\end{frame}
+
+\section{AdaBoost模型结构}
+
+\begin{frame}{模型介绍}
+  % 思想性地描述 AdaBoost 的整体结构
+  \begin{itemize}
+    \item AdaBoost 是一种典型的提升（Boosting）型集成学习框架，
+      其核心思想是：\textbf{通过多轮训练、聚焦难样本，把一群“弱学习器”提升为一个“强学习器”。}
+    \item 在每一轮中，AdaBoost 都会为总模型增加一个新的学习器，指导模型的弱学习器个数达到预先指定的值。
+    \item 训练新学习器时，根据上一轮的推理结果在同一训练集上\textbf{重新分配样本权重}，
+      使新的弱学习器更加关注上一轮中被分错或“难学”的样本。
+    \item 各轮得到的弱学习器本身能力都比较弱，但在最后通过加权组合（加权投票或加权求和），
+      形成一个整体性能更高、泛化能力更强的强学习器。
+    \item AdaBoost 不限定弱学习器的具体形式（如决策树桩、小深度决策树等），因此可以看作一个\textbf{通用的、
+      可移植的集成学习框架}。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{AdaBoost模型结构图}
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{./assets/adaboost.png}
+    \caption{AdaBoost模型结构图}
+  \end{figure}
+\end{frame}
+
+\subsection{计算流程}
+
+\begin{frame}{错误率计算规则}
+  假设训练集包含 $m$ 个样本 $\{(x_i,y_i),\cdots,(x_m,y_m)\}$。
+
+  不失一般性地，假设现在训练已经进行到第 $t$ 轮，将要训练第 $t$ 个弱学习器。
+
+  记第 $t$ 个学习器在样本 $x$ 上的预测结果为 $h_t(x)$。
+
+  设训练第 $t$ 个弱学习器所使用的样本权重为
+  \[
+    D_t = \{\omega_{t1},\cdots,\omega_{tm}\},\qquad
+    \sum_{i=1}^m \omega_{ti} = 1.
+  \]
+
+  则第 $t$ 轮弱学习器的加权错误率为
+  \[
+    \varepsilon_t
+      = \sum_{i=1}^m \omega_{ti}\,\mathbf{1}\{h_t(x_i)\neq y_i\}.
+  \]
+\end{frame}
+
+
+\begin{frame}{样本加权规则}
+  \textbf{第 $t$ 轮（$t=1,\dots,T$）：}
+  \begin{enumerate}
+    \item 计算系数
+      \[
+        \beta_t = \frac{\varepsilon_t}{1-\varepsilon_t},
+        \qquad 0 < \beta_t < 1.
+      \]
+    \item 先得到更新后的未归一化权重
+      \[
+        \tilde{\omega}_{t+1,i}
+          = \omega_{ti}\,\beta_t^{\,1-\mathbf{1}\{h_t(x_i)\neq y_i\}},
+          \qquad i=1,\dots,m.
+      \]
+    \item 再将其归一化，得到下一轮的权重分布
+      \[
+        \omega_{t+1,i}
+          = \frac{\tilde{\omega}_{t+1,i}}
+                  {\sum_{j=1}^m \tilde{\omega}_{t+1,j}}.
+      \]
+  \end{enumerate}
+
+  \vspace{0.5em}
+  \textbf{直观理解：}
+  \[
+    \begin{cases}
+      h_t(x_i)=y_i
+      \Rightarrow \tilde{\omega}_{t+1,i}=\omega_{ti}\,\beta_t
+        & \text{（分对：权重减小）}\\[0.3em]
+      h_t(x_i)\neq y_i
+      \Rightarrow \tilde{\omega}_{t+1,i}=\omega_{ti}
+        & \text{（分错：权重不变，归一化后相对增大）}
+    \end{cases}
+  \]
+\end{frame}
+
+\section{收敛性}
+
+\begin{frame}{AdaBoost 的训练误差界}
+
+\textbf{设：}
+\begin{itemize}
+  \item 第 $t$ 轮弱学习器的加权错误率为 $\varepsilon_t$；
+  \item 最终强分类器为 $h_f$，其在训练分布 $D$ 下的错误率为
+    \[
+      \varepsilon = \Pr_{i\sim D}[h_f(x_i)\neq y_i].
+    \]
+\end{itemize}
+
+\end{frame}
+\begin{frame}{AdaBoost 的训练误差界}
+\textbf{训练误差上界}
+\[
+  \varepsilon \;\le\; 2^T \prod_{t=1}^T \sqrt{\varepsilon_t(1-\varepsilon_t)}.
+\]
+
+引入第 $t$ 轮的“优势”（edge）:比随机猜测强的部分
+\[
+  \gamma_t = \tfrac{1}{2}-\varepsilon_t,
+\]
+则上界可以改写为
+\[
+  \varepsilon
+  \;\le\; \prod_{t=1}^T \sqrt{1-4\gamma_t^2}
+  = \exp\!\Bigl(-\sum_{t=1}^T \mathrm{KL}\!\bigl(\tfrac12 \,\big\|\, \tfrac12-\gamma_t\bigr)\Bigr)
+  \;\le\; \exp\!\Bigl(-2\sum_{t=1}^T \gamma_t^2\Bigr).
+\]
+
+\end{frame}
+
+\begin{frame}{AdaBoost 的训练误差界}
+\textbf{特殊情形：} 若所有弱学习器的错误率都相同，
+$\varepsilon_t = \tfrac12-\gamma$（$\gamma>0$），则
+\[
+  \varepsilon \;\le\; (1-4\gamma^2)^{T/2}
+  = \exp\!\bigl(-T\cdot \mathrm{KL}(\tfrac12 \,\|\, \tfrac12-\gamma)\bigr)
+  \;\le\; \exp(-2T\gamma^2).
+\]
+
+\textbf{结论：} 只要每一轮的弱学习器都略好于随机猜测（$\gamma_t>0$），
+AdaBoost 在训练集上的错误率会随轮数 $T$ \alert{指数级下降}。
+
+\end{frame}
+
+\subsection{收敛速度证明(可选)}
+
+\section{任务：手写数字识别}
+\begin{frame}{训练流程及结果}
+  数据集
+
+  关键代码
+  
+  准确率
+\end{frame}
+\subsection{误差分析}
+\begin{frame}
+  针对AdaBoost对噪声（离群点）敏感的问题，从过拟合的角度入手分析
+
+  AdaBoost会逐渐给离群样本赋予更高的权重，追踪样本权重的变化
+
+  MINIST数据集貌似是清洗过的，我们可以自行添加噪声来呈现AdaBoost的过拟合效应
+\end{frame}
+\begin{frame}[standout]
+  谢谢大家！
+\end{frame}
 \end{document}
