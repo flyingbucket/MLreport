@@ -197,7 +197,137 @@ AdaBoost 在训练集上的错误率会随轮数 $T$ \alert{指数级下降}。
 
 \end{frame}
 
-\subsection{收敛速度证明(可选)}
+\subsection{收敛性证明}
+
+\begin{frame}{收敛性证明}
+  \textbf{引理：} 训练误差界受限于归一化因子之积。
+  \[
+    \frac{1}{m}\sum_{i=1}^m \exp(-y_i f(x_i)) = \prod_{t=1}^T Z_t.
+  \]
+  其中 $Z_t = \sum_{i=1}^m \omega_{ti} \exp(-\alpha_t y_i h_t(x_i))$。
+  
+  \textbf{证明思路：}
+  \begin{enumerate}
+    \item 递推关系：$\omega_{t+1,i} = \frac{\omega_{ti} \exp(-\alpha_t y_i h_t(x_i))}{Z_t}$
+    \item 展开得到：$\omega_{T+1,i} = \frac{1}{m \prod_{t=1}^T Z_t} \exp(-y_i \sum_{t=1}^T \alpha_t h_t(x_i))$
+    \item 由 $\sum \omega_{T+1,i} = 1$，可得上述等式。
+    \item 由于 $\mathbf{1}\{H(x)\neq y\} \le \exp(-y H(x))$，故误差 $\le \prod Z_t$。
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{收敛性证明（续）}
+  \textbf{计算 $Z_t$ 的极小值：}
+  \[
+    Z_t = \sum_{y_i=h_t(x_i)} \omega_{ti} e^{-\alpha_t} + \sum_{y_i \neq h_t(x_i)} \omega_{ti} e^{\alpha_t}
+    = (1-\varepsilon_t)e^{-\alpha_t} + \varepsilon_t e^{\alpha_t}
+  \]
+  对 $\alpha_t$ 求导并令其为0，可得最优权重：
+  \[
+    \alpha_t = \frac{1}{2} \ln \frac{1-\varepsilon_t}{\varepsilon_t}
+  \]
+  代回 $Z_t$ 表达式：
+  \[
+    Z_t = 2\sqrt{\varepsilon_t(1-\varepsilon_t)} = \sqrt{1-4\gamma_t^2}
+  \]
+  从而得证：
+  \[
+    \varepsilon_{\text{train}} \le \prod_{t=1}^T \sqrt{1-4\gamma_t^2} \le \exp(-2\sum_{t=1}^T \gamma_t^2)
+  \]
+\end{frame}
+
+\section{泛化误差}
+
+\begin{frame}{泛化误差与过拟合}
+  \begin{itemize}
+    \item \textbf{现象：} 在许多实验中观察到，即使训练误差已经降为0，继续增加弱分类器数量 $T$，测试误差不仅没有上升（过拟合），反而进一步下降。
+    \item \textbf{传统解释失效：} 传统的 VC 维理论认为模型复杂度随 $T$ 增加，泛化界应变差。
+    \item \textbf{间隔理论（Margin Theory）：} 
+      AdaBoost 在训练误差为 0 后，继续训练会使得样本的\textbf{分类间隔（Margin）}不断增大。
+      \[
+        \text{margin}(x, y) = \frac{y \sum_t \alpha_t h_t(x)}{\sum_t \alpha_t}
+      \]
+    \item 更大的间隔意味着更强的鲁棒性和更好的泛化能力。
+  \end{itemize}
+\end{frame}
+
+\section{理论进阶}
+
+\begin{frame}{统计解释：指数损失最小化}
+  AdaBoost 的另一种解释是：\textbf{前向分步加法模型}（Forward Stagewise Additive Modeling）在\textbf{指数损失函数}下的优化过程。
+  
+  \begin{itemize}
+    \item \textbf{加法模型：} $f(x) = \sum_{t=1}^T \alpha_t h_t(x)$
+    \item \textbf{损失函数：} $L(y, f(x)) = \exp(-y f(x))$
+  \end{itemize}
+
+  \textbf{性质：}
+  指数损失是 0/1 损失的一致上界，且处处可微。
+  \[
+    \mathbf{1}\{y \neq f(x)\} \le \exp(-y f(x))
+  \]
+  最小化指数损失等价于最小化分类错误率的上界。这为 AdaBoost 的权重更新规则提供了统计学依据。
+\end{frame}
+
+\begin{frame}{多分类扩展：SAMME 算法}
+  原始 AdaBoost (AdaBoost.M1) 主要针对二分类问题。对于 MNIST 手写数字识别（10分类），需要进行扩展。
+  
+  \textbf{SAMME (Stagewise Additive Modeling using a Multi-class Exponential loss function)} 算法调整了权重更新公式：
+  \[
+    \alpha_t = \ln \frac{1-\varepsilon_t}{\varepsilon_t} + \ln(K-1)
+  \]
+  其中 $K$ 是类别数量（MNIST 中 $K=10$）。
+  
+  \textbf{收敛条件：}
+  只要 $\varepsilon_t < 1 - \frac{1}{K}$（即弱分类器优于随机猜测），则 $\alpha_t > 0$，算法即可收敛。
+\end{frame}
+
+\begin{frame}{偏差-方差权衡 (Bias-Variance Tradeoff)}
+  从误差分解的视角对比 Bagging (如随机森林) 与 Boosting (如 AdaBoost)：
+  \begin{itemize}
+    \item \textbf{Bagging (并行)：} 
+      通过对训练集重采样训练多个强学习器并取平均。
+      主要降低\textbf{方差 (Variance)}，适合高方差模型（如完全生长的决策树）。
+    \item \textbf{Boosting (串行)：} 
+      通过迭代修正前一轮的错误。
+      主要降低\textbf{偏差 (Bias)}，能将高偏差的\textbf{弱学习器}（如决策树桩）提升为强学习器。
+      随着迭代次数增加，方差也可能略有下降，但过度迭代会导致过拟合（方差上升）。
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{正则化：Shrinkage 策略}
+  为了进一步防止过拟合，AdaBoost 常引入\textbf{学习率 (Learning Rate)} 参数 $\nu$ ($0 < \nu \le 1$)：
+  \[
+    f_t(x) = f_{t-1}(x) + \nu \cdot \alpha_t h_t(x)
+  \]
+  \begin{itemize}
+    \item \textbf{作用：} 限制每个弱分类器的贡献，迫使学习过程更加缓慢和稳健。
+    \item \textbf{代价：} 较小的 $\nu$ 通常意味着需要更多的迭代次数 $T$ 才能达到同样的训练误差。
+    \item 在实践中，这是调节模型泛化能力最重要的参数之一。
+  \end{itemize}
+\end{frame}
+
+\section{总结与展望}
+
+\begin{frame}{AdaBoost 优缺点总结}
+  \begin{columns}[T]
+    \column{0.48\textwidth}
+      \textbf{优点：}
+      \begin{itemize}
+        \item \textbf{泛化能力强：} 在许多问题上不易过拟合（Margin 理论）。
+        \item \textbf{参数少：} 原始算法几乎无需调参。
+        \item \textbf{通用性：} 可与任何弱学习器结合。
+      \end{itemize}
+    \column{0.48\textwidth}
+      \textbf{缺点：}
+      \begin{itemize}
+        \item \textbf{对噪声敏感：} 异常值权重会被过度放大（本次实验重点验证）。
+        \item \textbf{串行训练：} 难以并行化，训练速度较慢。
+      \end{itemize}
+  \end{columns}
+  
+  \vspace{1em}
+  \textbf{经典应用：} Viola-Jones 人脸检测框架（基于 Haar 特征 + AdaBoost 级联）。
+\end{frame}
 
 \section{任务：手写数字识别}
 \begin{frame}{训练流程及结果}
@@ -208,12 +338,18 @@ AdaBoost 在训练集上的错误率会随轮数 $T$ \alert{指数级下降}。
   准确率
 \end{frame}
 \subsection{误差分析}
-\begin{frame}
-  针对AdaBoost对噪声（离群点）敏感的问题，从过拟合的角度入手分析
-
-  AdaBoost会逐渐给离群样本赋予更高的权重，追踪样本权重的变化
-
-  MINIST数据集貌似是清洗过的，我们可以自行添加噪声来呈现AdaBoost的过拟合效应
+\begin{frame}{基于MNIST变体的鲁棒性分析}
+  为了评估模型的鲁棒性，我们将原始 MNIST 测试集进行不同程度的变换作为新的测试集（MNIST Variants），主要包括噪声干扰（高斯噪声、椒盐噪声）和几何变换（旋转、缩放）。
+  
+  \textbf{实验结果与分析：}
+  \begin{itemize}
+    \item \textbf{对噪声敏感：} 
+      AdaBoost 在干净数据上表现优异，但随着噪声比例增加，准确率下降明显快于 Bagging 类算法（如随机森林）。
+    \item \textbf{原因探究：} 
+      AdaBoost 的核心机制是关注“难分样本”。高噪声样本往往被视为难分样本，权重被不断放大。
+    \item \textbf{权重偏移：}
+      模型过度关注这些无法正确分类的噪声点（离群点），导致决策边界发生扭曲，从而降低了对正常样本的泛化能力。
+  \end{itemize}
 \end{frame}
 \begin{frame}[standout]
   谢谢大家！
