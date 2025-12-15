@@ -135,7 +135,9 @@
       \]
   \end{enumerate}
 
-  \vspace{0.5em}
+\end{frame}
+\begin{frame}{样本加权规则}
+  \textbf{第 $t$ 轮（$t=1,\dots,T$）：}
   \textbf{直观理解：}
   \[
     \begin{cases}
@@ -147,6 +149,7 @@
         & \text{（分错：权重不变，归一化后相对增大）}
     \end{cases}
   \]
+  这意味这模型会不断给难以分类的样本点增加权重，而这些难分类的点可能是数据中的噪声/离群点，可能导致模型在中后期过拟合。
 \end{frame}
 
 \section{收敛性}
@@ -330,17 +333,135 @@ AdaBoost 在训练集上的错误率会随轮数 $T$ \alert{指数级下降}。
 \end{frame}
 
 \section{任务：手写数字识别}
-\begin{frame}{训练流程及结果}
-  数据集
+\begin{frame}{任务}
+  训练一个AdaBoost分类器,对手写数字图片进行分类。
 
-  关键代码
-  
-  准确率
+  这是一个多分类（十类）问题。
 \end{frame}
-\subsection{误差分析}
+
+\subsection{方法}
+\begin{frame}{数据集及数据处理}
+  \textbf{数据集}:
+  \begin{itemize}
+    \item 使用MNIST数据集，按照8：2切分训练集和测试集，
+    \item 在MNIST测试集和课程提供的手写图片两组数据上分别测试。
+  \end{itemize}
+  \textbf{数据预处理}:
+  \begin{itemize}
+    \item 所有图片转化为黑底白字
+    \item 按照包含该数字的最小正方形进行切割
+    \item 使用cv2.resize方法将图片缩放至20x20
+    \item 将数字图片嵌入到28x28的纯黑色背景
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{./assets/course_data.png}
+    \caption{预处理后数据示意图}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{特征提取}
+  \begin{itemize}
+    \item 原始图片，reshape为(784,)一维向量
+    \item HOG 
+    \item Hu不变矩
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{关键代码}
+  使用`sklearn.ensemble.AdaBoostClassifier`实现的AdaBoost分类器
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{./assets/sklearn_AdaBoost.png}
+    \caption{sklearn AdaBoost分类器实例构建}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{关键代码}
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\linewidth]{./assets/run.png}
+    \caption{实验主入口示例}
+  \end{figure}
+\end{frame}
+
+\subsection{实验}
+\begin{frame}{AdaBoost参数选择}
+  \begin{table}[]
+    \centering
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{参数}          & \textbf{值}            \\ \hline
+    \textbf{max\_depth}    & 2                      \\ \hline
+    \textbf{max\_features} & 0.2                    \\ \hline
+    \textbf{criterion}     & entropy                \\ \hline
+    \textbf{random\_state} & 42                     \\ \hline
+    \textbf{n\_estimators} & 1000                   \\ \hline
+    \textbf{learning\_rate}& 0.5                    \\ \hline
+    \end{tabular}
+    \caption{训练参数}
+  \end{table}
+\end{frame}
+\begin{frame}{原始图片}
+  \begin{table}[]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集}       & \textbf{准确率}    & \textbf{精度 (宏平均)}   & \textbf{召回率 (宏平均)} & \textbf{F1值 (宏平均)} \\ \hline
+    \textbf{MNIST}        & 0.8727            & 0.8758                  & 0.8719                  & 0.8723                  \\ \hline
+    \textbf{课程数据集}   & 0.4               & 0.2083                  & 0.4                     & 0.2567                  \\ \hline
+    \end{tabular}
+    \caption{模型在MNIST和课程数据集上的测试结果}
+  \end{table}
+\end{frame}
+
+\begin{frame}{Hu不变矩}
+  \begin{table}[]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集}       & \textbf{准确率}    & \textbf{精度 (宏平均)}   & \textbf{召回率 (宏平均)} & \textbf{F1值 (宏平均)} \\ \hline
+    \textbf{MNIST}        & 0.5051            & 0.4921                  & 0.4961                  & 0.4904                  \\ \hline
+    \textbf{课程数据集}   & 0.2               & 0.15                    & 0.2                     & 0.1667                  \\ \hline
+    \end{tabular}
+    \caption{模型在MNIST和课程数据集上的测试结果}
+  \end{table}
+\end{frame}
+
+\begin{frame}{HOG}
+  \begin{table}[]
+    \centering
+    \begin{tabular}{|c|c|}
+    \hline
+    \textbf{参数}              & \textbf{值}        \\ \hline
+    \textbf{orientations}      & 9                  \\ \hline
+    \textbf{pixels\_per\_cell} & [2, 2]             \\ \hline
+    \textbf{cells\_per\_block} & [2, 2]             \\ \hline
+    \end{tabular}
+    \caption{HOG 特征提取参数}
+  \end{table}
+
+  \begin{table}[]
+    \centering
+    \begin{tabular}{|c|c|c|c|c|}
+    \hline
+    \textbf{数据集}       & \textbf{准确率}    & \textbf{精度 (宏平均)}   & \textbf{召回率 (宏平均)} & \textbf{F1值 (宏平均)} \\ \hline
+    \textbf{MNIST}        & 0.9356            & 0.93596                 & 0.93515                 & 0.93536                 \\ \hline
+    \textbf{课程数据集}   & 0.7               & 0.5833                  & 0.7                     & 0.6167                  \\ \hline
+    \end{tabular}
+    \caption{模型在MNIST和课程数据集上的测试结果}
+  \end{table}
+\end{frame}
+
+\subsection{鲁棒性与误差分析}
+\begin{frame}{鲁棒性:过拟合}
+  AdaBoost
+\end{frame}
+
 \begin{frame}{基于MNIST变体的鲁棒性分析}
-  为了评估模型的鲁棒性，我们将原始 MNIST 测试集进行不同程度的变换作为新的测试集（MNIST Variants），主要包括噪声干扰（高斯噪声、椒盐噪声）和几何变换（旋转、缩放）。
-  
   \textbf{实验结果与分析：}
   \begin{itemize}
     \item \textbf{对噪声敏感：} 
