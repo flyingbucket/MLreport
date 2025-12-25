@@ -33,7 +33,7 @@
 \usepackage{booktabs}
 \usepackage{array}
 \usepackage{threeparttable}
-
+\usepackage{listings}
 % 算法环境（与 beamer 兼容）
 \usepackage{algorithm}
 \usepackage[noend]{algpseudocode}  % 提供 algorithmic 环境、\State 等
@@ -305,35 +305,43 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame}{关键代码}
-  使用`sklearn.ensemble.AdaBoostClassifier`实现的AdaBoost分类器
-  \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\linewidth]{./assets/sklearn_AdaBoost.png}
-    \caption{sklearn AdaBoost分类器实例构建}
-  \end{figure}
+\begin{frame}{AdaLab：AdaBoost 实验园地}
+\textbf{AdaLab} 是一个面向研究的 AdaBoost 实验园地，通过端到端的实验框架支持 AdaBoost 算法的过拟合行为、泛化能力与鲁棒性特征的系统性研究。  
+项目提供了 Python 实验框架与 CLI 工具，支持通过 JSON 配置文件驱动实验流程，实现零代码运行实验适用于算法分析、实验复现与对比研究。
+
+\begin{itemize}
+    \item 端到端实验框架从训练、评估到可视化，所有步骤都可以通过 JSON 配置文件驱动。
+    \item AdaBoost 核心机制可观测支持样本权重、噪声样本与干净样本权重、弱分类器 alpha 等的精细监控。
+    \item 鲁棒性研究的数据处理模块包括特征提取（HOG、Hu 不变矩）和多种图像扰动方式（噪声、破坏、变形等）。
+    \item CLI 驱动，零代码运行提供统一的 adalab 命令行工具，适合批量实验管理与脚本化操作。
+    \item 可选配套可视化模块独立的 adalab\_viz 包，用于结构化可视化实验结果。
+\end{itemize}
+
 \end{frame}
 
-\begin{frame}{关键代码}
+
+\begin{frame}{AdaLab 使用方法与常见运行模式}
   \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\linewidth]{./assets/run.png}
-    \caption{实验主入口示例}
+    \includegraphics[width=0.9\linewidth]{./assets/adalab_help.png}
+    \caption{adalab包的CLI使用}
   \end{figure}
+
 \end{frame}
 
-\subsection{实验数据展示}
+
+\subsection{实验结果展示}
 \begin{frame}{AdaBoost参数选择}
   \begin{table}[]
     \centering
     \begin{tabular}{|c|c|}
     \hline
     \textbf{参数}          & \textbf{值}            \\ \hline
-    \textbf{max\_depth}    & 2                      \\ \hline
-    \textbf{max\_features} & 0.2                    \\ \hline
+    \textbf{max\_depth}    & 3                      \\ \hline
+    \textbf{max\_features} & 0.3                    \\ \hline
     \textbf{criterion}     & entropy                \\ \hline
     \textbf{random\_state} & 42                     \\ \hline
-    \textbf{n\_estimators} & 1000                   \\ \hline
+    \textbf{n\_estimators} & 500                   \\ \hline
     \textbf{learning\_rate}& 0.5                    \\ \hline
     \end{tabular}
     \caption{训练参数}
@@ -345,8 +353,8 @@
     \begin{tabular}{|c|c|c|c|c|}
     \hline
     \textbf{数据集}       & \textbf{准确率}    & \textbf{精度 (宏平均)}   & \textbf{召回率 (宏平均)} & \textbf{F1值 (宏平均)} \\ \hline
-    \textbf{MNIST}        & 0.8727            & 0.8758                  & 0.8719                  & 0.8723                  \\ \hline
-    \textbf{课程数据集}   & 0.4               & 0.2083                  & 0.4                     & 0.2567                  \\ \hline
+    \textbf{MNIST}        & 0.9184            & 0.9196                  & 0.9180                  & 0.9182                  \\ \hline
+    \textbf{课程数据集}   & 0.6               & 0.4                  & 0.6                     & 0.4667                  \\ \hline
     \end{tabular}
     \caption{模型在MNIST和课程数据集上的测试结果}
   \end{table}
@@ -358,8 +366,8 @@
     \begin{tabular}{|c|c|c|c|c|}
     \hline
     \textbf{数据集}       & \textbf{准确率}    & \textbf{精度 (宏平均)}   & \textbf{召回率 (宏平均)} & \textbf{F1值 (宏平均)} \\ \hline
-    \textbf{MNIST}        & 0.5051            & 0.4921                  & 0.4961                  & 0.4904                  \\ \hline
-    \textbf{课程数据集}   & 0.2               & 0.15                    & 0.2                     & 0.1667                  \\ \hline
+    \textbf{MNIST}        & 0.5208            & 0.5017                  & 0.5113                  & 0.5038                  \\ \hline
+    \textbf{课程数据集}   & 0.4               & 0.2333                    & 0.4                     & 0.2833                  \\ \hline
     \end{tabular}
     \caption{模型在MNIST和课程数据集上的测试结果}
   \end{table}
@@ -372,34 +380,44 @@
     \hline
     \textbf{参数}              & \textbf{值}        \\ \hline
     \textbf{orientations}      & 9                  \\ \hline
-    \textbf{pixels\_per\_cell} & [2, 2]             \\ \hline
+    \textbf{pixels\_per\_cell} & [4, 4]             \\ \hline
     \textbf{cells\_per\_block} & [2, 2]             \\ \hline
     \end{tabular}
     \caption{HOG 特征提取参数}
   \end{table}
 
   \begin{table}[]
-    \centering
-    \begin{tabular}{|c|c|c|c|c|}
-    \hline
-    \textbf{数据集}       & \textbf{准确率}    & \textbf{精度 (宏平均)}   & \textbf{召回率 (宏平均)} & \textbf{F1值 (宏平均)} \\ \hline
-    \textbf{MNIST}        & 0.9356            & 0.93596                 & 0.93515                 & 0.93536                 \\ \hline
-    \textbf{课程数据集}   & 0.7               & 0.5833                  & 0.7                     & 0.6167                  \\ \hline
-    \end{tabular}
-    \caption{模型在MNIST和课程数据集上的测试结果}
+  	\centering
+  	\begin{tabular}{|c|c|c|c|c|}
+  		\hline
+  		\textbf{数据集}       & \textbf{准确率}    & \textbf{精度 (宏平均)}   & \textbf{召回率 (宏平均)} & \textbf{F1值 (宏平均)} \\ \hline
+  		\textbf{MNIST}        & 0.958            & 0.9581                  & 0.9578                  & 0.9579                  \\ \hline
+  		\textbf{课程数据集}   & 0.6               & 0.525                  & 0.6                     & 0.54                  \\ \hline
+  	\end{tabular}
+  	\caption{模型在MNIST和课程数据集上的测试结果}
   \end{table}
-\end{frame}
-
-\begin{frame}{理想模型数据展示}
-	\begin{tabular}{cc}
-		\includegraphics[width=0.45\textwidth]{./assets/best_accuracy.png} &
-		\includegraphics[width=0.45\textwidth]{./assets/best_f1_score.png} \\
-	\end{tabular}
 \end{frame}
 
 \subsection{鲁棒性与误差分析}
 
-\begin{frame}{特征提取有效性}
+\begin{frame}{泛化能力:MNIST数据量下的结论}
+\begin{table}[htbp]
+\centering
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{测试集} & \textbf{准确率} & \textbf{平均Recall} \\ \hline
+Contrast & 0.958 & 0.960 \\ \hline
+Rotate & 0.958 & 0.960 \\ \hline
+Brightness & 0.958 & 0.960 \\ \hline
+Multiple Disturbances & 0.916 & 0.922 \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{备注：} 
+对于多个扰动测试集，尽管准确率有所下降（0.916），但大部分类别的Recall值较高，尤其是数字"0"、"6"和"8"的Recall均维持在较高水平。少数类别（如"1"和"7"）的Recall较低，表明其泛化能力受到了影响。
+\end{frame}
+
+\begin{frame}{泛化能力:特征提取有效性}
   不同特征提取方式的特征空间分布：
   \begin{figure}
   	\centering
@@ -409,38 +427,6 @@
   		\includegraphics[width=0.3\textwidth]{./assets/feature_hog.png} 
   	\end{tabular}
   \end{figure}
-\end{frame}
-
-\begin{frame}{训练模型对噪声的适应能力}
-	由于原始数据噪声较少，通过人为添加噪声探究其对ababoost拟合效果的影响
-	
-	(特征与噪声在学习器中的权重图，title弱学习器的分类权重)
-\end{frame}
-
-\begin{frame}{训练模型对噪声的适应能力}
-  
-  (最终得到的加权学习器的权重图，title最终模型的权重)
-  
-  (噪声环境对准确率的影响图,title噪声环境下分辨优质样本的准确率)
-\end{frame}
-
-\begin{frame}{训练模型对噪声的适应能力}
-  \begin{figure}
-  	\centering
-  	\begin{tabular}{cc}
-  		\includegraphics[width=0.45\textwidth]{./assets/all_noise_accuracy.png} &
-  		\includegraphics[width=0.45\textwidth]{./assets/all_noise_f1.png} \\ 
-  	\end{tabular}
-  \end{figure}
-\end{frame}
-
-\begin{frame}{训练模型对噪声的适应能力}
-  \textbf{噪声研究分析与结论}
-  \begin{itemize}
-	\item 随着迭代次数增多，噪声权重增大导致后续学习器逐渐关注训练集的噪声部分
-	\item 实际训练中，更关注噪声的这部分学习器在最终得到的模型中权重很小
-	\item 训练集噪声对模型训练的影响相对稳定，且无噪声测试集仍呈现较高的准确率
-  \end{itemize}
 \end{frame}
 
 \begin{frame}{对不同风格测试集的泛化能力}
@@ -459,17 +445,6 @@
 \end{frame}
 
 \begin{frame}{对不同风格测试集的泛化能力}
-  \begin{figure}
-  	\centering
-  	\begin{tabular}{ccc}
-  		\includegraphics[width=0.3\textwidth]{./assets/shift_1.png} &
-  		\includegraphics[width=0.3\textwidth]{./assets/shift_2.png} &
-  		\includegraphics[width=0.3\textwidth]{./assets/shift_3.png} 
-  	\end{tabular}
-  \end{figure}
-\end{frame}
-
-\begin{frame}{对不同风格测试集的泛化能力}
   \textbf{风格扰动研究分析与结论}:
   \begin{itemize}
   	\item 加入不同扰动后，特征提取的效果明显
@@ -478,16 +453,44 @@
   \end{itemize}
 \end{frame}
 
+\begin{frame}{鲁棒性：模型对噪声的适应能力}
+  \begin{figure}
+  	\centering
+  	\begin{tabular}{ccc}
+  		\includegraphics[width=0.85\textwidth]{./assets/noise6_hog_depth2_v2.png} 
+  	\end{tabular}
+  \end{figure}
+
+\end{frame}
+\begin{frame}{鲁棒性：模型对噪声的适应能力}
+  \begin{figure}
+  	\centering
+  	\begin{tabular}{cc}
+  		\includegraphics[width=0.45\textwidth]{./assets/all_noise_accuracy.png} &
+  		\includegraphics[width=0.45\textwidth]{./assets/all_noise_f1.png} \\ 
+  	\end{tabular}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{鲁棒性:训练模型对噪声的适应能力}
+  \textbf{噪声研究分析与结论}
+  \begin{itemize}
+	\item 随着迭代次数增多，噪声权重增大导致后续学习器逐渐关注训练集的噪声部分
+	\item 实际训练中，更关注噪声的这部分学习器在最终得到的模型中权重很小
+	\item 训练集噪声对模型训练的影响相对稳定，且无噪声测试集仍呈现较高的准确率
+  \end{itemize}
+\end{frame}
+
+
 \begin{frame}{误差分析}
   \textbf{误差来源与影响}
     \begin{itemize}
 	  \item 样本数量少，识别结果方差大，准确率波动较大
-	  \item 特征提取展示降维较多，数据展示较为单一
 	  \item 人工噪声无法模拟真实的误差环境,实验对比更多体现了模型的泛化能力
 	\end{itemize}
 \end{frame}
 
-\begin{frame}{基于MNIST变体的鲁棒性分析}
+\begin{frame}{总结}
 	\textbf{实验结果}：
 	\begin{itemize}
 		\item \textbf{噪声适应能力较强}:
